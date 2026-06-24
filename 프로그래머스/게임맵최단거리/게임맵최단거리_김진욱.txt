@@ -1,0 +1,130 @@
+#include<vector>
+#include<queue>
+#include<iostream>
+#include<map>
+
+using namespace std;
+struct Pos{ 
+    int y;
+    int x;
+
+    bool operator<(const Pos& other) const {
+        if (y == other.y) {
+            return x < other.x;
+        }
+        return y < other.y;
+    }
+
+};
+
+int solution(vector<vector<int> > maps)
+{
+    int answer = 0;
+    queue<Pos> q;
+    
+    Pos startPoint = { 0 , 0};
+    Pos endPoint = { (int)maps.size() - 1, (int)maps[0].size() - 1 };
+    
+    Pos dir[4] = {
+        {-1, 0}, {1, 0}, {0, -1}, {0, 1}
+    };
+    bool found = false;
+    
+    q.push(startPoint);
+    // 💡 시작점 maps[0][0]은 이미 1이므로 따로 세팅할 필요 없음!
+    
+    while(!q.empty()){
+        Pos qCurrent = q.front();
+        q.pop();
+        
+        if(qCurrent.x == endPoint.x && qCurrent.y == endPoint.y){
+            found = true;
+            break;
+        }
+        
+        for(int i=0; i < 4; ++i){
+            int nextX = qCurrent.x + dir[i].x;
+            int nextY = qCurrent.y + dir[i].y;
+            
+            if(nextX < 0 || nextX >= maps[0].size() || nextY < 0 || nextY >= maps.size()){
+                continue;
+            }
+            
+            // 💡 maps 값이 1인 곳만 방문 (벽 0과 이미 방문한 곳인 2 이상을 한 번에 걸러냄)
+            if (maps[nextY][nextX] == 1) {
+                maps[nextY][nextX] = maps[qCurrent.y][qCurrent.x] + 1;
+                q.push({nextY, nextX});
+            }
+        }
+    }
+    
+    if (found) {
+        answer = maps[endPoint.y][endPoint.x];
+    }
+    
+    return found ? answer : -1;
+}
+
+
+/*
+#include<vector>
+#include<queue>
+#include<iostream>
+
+using namespace std;
+
+struct Pos {
+    int y;
+    int x;
+};
+
+int solution(vector<vector<int> > maps)
+{
+    int n = maps.size();    // 세로 크기 고정
+    int m = maps[0].size(); // 가로 크기 고정
+    
+    queue<Pos> q;
+    
+    Pos startPoint = { 0 , 0};
+    Pos endPoint = { n - 1, m - 1 };
+    
+    // 💡 1. 안 쓰는데 메모리 먹던 visited, parent 선언부 완전 삭제!
+    
+    Pos dir[4] = {
+        {-1, 0}, {1, 0}, {0, -1}, {0, 1}
+    };
+    
+    q.push(startPoint);
+    
+    while(!q.empty()){
+        Pos qCurrent = q.front();
+        q.pop();
+        
+        for(int i=0; i < 4; ++i){
+            int nextX = qCurrent.x + dir[i].x;
+            int nextY = qCurrent.y + dir[i].y;
+            
+            // 맵 범위 체크 (변수로 비교해서 더 빠름)
+            if(nextX < 0 || nextX >= m || nextY < 0 || nextY >= n){
+                continue;
+            }
+            
+            // 아직 방문하지 않은 길(1)인 경우에만 탐색
+            if (maps[nextY][nextX] == 1) {
+                maps[nextY][nextX] = maps[qCurrent.y][qCurrent.x] + 1;
+                
+                // 💡 2. [핵심 최적화] 큐에 넣기 전에 목적지인지 확인하고 맞으면 바로 탈출!
+                if(nextX == endPoint.x && nextY == endPoint.y){
+                    return maps[nextY][nextX];
+                }
+                
+                q.push({nextY, nextX});
+            }
+        }
+    }
+    
+    // 여기까지 왔다는 건 목적지에 도달할 수 없다는 뜻
+    return -1;
+}
+
+*/
